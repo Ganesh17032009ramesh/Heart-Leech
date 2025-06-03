@@ -25,6 +25,7 @@ from pyrogram import utils as pyroutils
 from .core.config_manager import BinConfig
 from sabnzbdapi import SabnzbdClient
 
+# Suppress log levels for external libraries
 getLogger("requests").setLevel(WARNING)
 getLogger("urllib3").setLevel(WARNING)
 getLogger("pyrogram").setLevel(ERROR)
@@ -34,15 +35,18 @@ getLogger("httpx").setLevel(WARNING)
 getLogger("pymongo").setLevel(WARNING)
 getLogger("aiohttp").setLevel(WARNING)
 
+# Patch Pyrogram minimum ID values
 pyroutils.MIN_CHAT_ID = -999999999999
 pyroutils.MIN_CHANNEL_ID = -100999999999999
 bot_start_time = time()
 
+# Create and set event loop
 bot_loop = new_event_loop()
 set_event_loop(bot_loop)
 
+# Setup logging
 basicConfig(
-    format="[%(asctime)s] [%(levelname)s] - %(message)s",  #  [%(filename)s:%(lineno)d]
+    format="[%(asctime)s] [%(levelname)s] - %(message)s",
     datefmt="%d-%b-%y %I:%M:%S %p",
     handlers=[FileHandler("log.txt"), StreamHandler()],
     level=INFO,
@@ -51,6 +55,7 @@ basicConfig(
 LOGGER = getLogger(__name__)
 cpu_no = cpu_count()
 
+# Global variables and dictionaries
 bot_cache = {}
 DOWNLOAD_DIR = "/usr/src/app/downloads/"
 intervals = {"status": {}, "qb": "", "jd": "", "nzb": "", "stopAll": False}
@@ -67,6 +72,7 @@ status_dict = {}
 task_dict = {}
 rss_dict = {}
 shortener_dict = {}
+
 var_list = [
     "BOT_TOKEN",
     "TELEGRAM_API",
@@ -78,6 +84,7 @@ var_list = [
     "UPSTREAM_BRANCH",
     "UPDATE_PKGS",
 ]
+
 auth_chats = {}
 excluded_extensions = ["aria2", "!qB"]
 drives_names = []
@@ -87,6 +94,8 @@ sudo_users = []
 non_queued_dl = set()
 non_queued_up = set()
 multi_tags = set()
+
+# Locks
 task_dict_lock = Lock()
 queue_dict_lock = Lock()
 qb_listener_lock = Lock()
@@ -95,11 +104,15 @@ jd_listener_lock = Lock()
 cpu_eater_lock = Lock()
 same_directory_lock = Lock()
 
+# Initialize SABnzbd client
 sabnzbd_client = SabnzbdClient(
     host="http://localhost",
     api_key="admin",
     port="8070",
 )
-srun([BinConfig.QBIT_NAME, "-d", f"--profile={getcwd()}"], check=False)
 
+# Launch qbittorrent-nox
+srun(["qbittorrent-nox", "-d", f"--profile={getcwd()}"], check=False)
+
+# Initialize scheduler
 scheduler = AsyncIOScheduler(event_loop=bot_loop)
